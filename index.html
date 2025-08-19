@@ -2,71 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Social Feed</title>
+  <title>Ipost</title>
   <link rel="stylesheet" href="style.css" />
-<link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #f4f4f4;
+      color: #333;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    .login-box {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 8px 16px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #555;
+    }
+    .post {
+      border-bottom: 1px dashed #aaa;
+      padding: 10px 0;
+    }
+    .timestamp {
+      font-size: 0.8em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to the Social Feed</h1>
+  <h1>Ipost</h1>
 
-  <!-- Sign-Up Form -->
-  <h2>Sign Up</h2>
-  <form id="signup-form">
-    <input type="text" id="signup-username" placeholder="Username" required />
-    <input type="password" id="signup-password" placeholder="Password" required />
-    <button type="submit">Sign Up</button>
-  </form>
-  <p id="signup-message"></p>
+  <!-- Auth Section -->
+  <div id="auth-section" class="login-box">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="text" id="login-username" placeholder="Username" required />
+      <input type="password" id="login-password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <p id="login-message"></p>
 
-  <!-- Login Form -->
-  <h2>Login</h2>
-  <form id="login-form">
-    <input type="text" id="login-username" placeholder="Username" required />
-    <input type="password" id="login-password" placeholder="Password" required />
-    <button type="submit">Login</button>
-  </form>
-  <p id="login-message"></p>
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <input type="text" id="signup-username" placeholder="New Username" required />
+      <input type="password" id="signup-password" placeholder="New Password" required />
+      <button type="submit">Sign Up</button>
+    </form>
+    <p id="signup-message"></p>
+  </div>
 
-  <!-- Post Form -->
-  <h2>Post Something</h2>
-  <form id="post-form" style="display: none;">
-    <textarea id="post-content" placeholder="What's on your mind?" required></textarea>
-    <button type="submit">Post</button>
-  </form>
+  <!-- Feed Section -->
+  <div id="feed-section" style="display: none;" class="login-box">
+    <h2>Post Something</h2>
+    <form id="postForm">
+      <input type="text" id="post-content" placeholder="What's on your mind?" required />
+      <button type="submit">Post</button>
+    </form>
+    <p id="post-message"></p>
 
-  <!-- Feed -->
-  <h2>Feed</h2>
-  <div id="feed"></div>
+    <h2>Recent Posts</h2>
+    <div id="feed"></div>
+  </div>
 
   <script>
     let loggedInUsername = null;
 
-    // Sign-Up Handler
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('signup-username').value;
-      const password = document.getElementById('signup-password').value;
-
-      const res = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      const text = await res.text();
-      document.getElementById('signup-message').textContent = text;
-
-      if (res.ok) {
-        loggedInUsername = username;
-        document.getElementById('post-form').style.display = 'block';
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('signup-form').style.display = 'none';
-        loadPosts();
-      }
-    });
-
-    // Login Handler
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
+    // Login handler
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('login-username').value;
       const password = document.getElementById('login-password').value;
@@ -82,15 +105,33 @@
 
       if (res.ok) {
         loggedInUsername = username;
-        document.getElementById('post-form').style.display = 'block';
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('signup-form').style.display = 'none';
-        loadPosts();
+        showFeed();
       }
     });
 
-    // Post Handler
-    document.getElementById('post-form').addEventListener('submit', async (e) => {
+    // Sign-up handler
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('signup-username').value;
+      const password = document.getElementById('signup-password').value;
+
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const text = await res.text();
+      document.getElementById('signup-message').textContent = text;
+
+      if (res.ok) {
+        loggedInUsername = username;
+        showFeed();
+      }
+    });
+
+    // Post handler
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const content = document.getElementById('post-content').value;
 
@@ -100,14 +141,17 @@
         body: JSON.stringify({ user: loggedInUsername, content })
       });
 
+      const text = await res.text();
+      document.getElementById('post-message').textContent = text;
+
       if (res.ok) {
         document.getElementById('post-content').value = '';
-        loadPosts();
+        loadFeed();
       }
     });
 
-    // Load Feed
-    async function loadPosts() {
+    // Load posts
+    async function loadFeed() {
       const res = await fetch('/posts');
       const posts = await res.json();
       const feed = document.getElementById('feed');
@@ -117,12 +161,18 @@
         const div = document.createElement('div');
         div.className = 'post';
         div.innerHTML = `
-          <div class="post-user">${post.user}</div>
-          <div class="post-time">${new Date(post.timestamp).toLocaleString()}</div>
-          <div class="post-content">${post.content}</div>
+          <strong>${post.user}</strong>: ${post.content}
+          <div class="timestamp">${new Date(post.timestamp).toLocaleString()}</div>
         `;
         feed.appendChild(div);
       });
+    }
+
+    // Show feed and hide auth
+    function showFeed() {
+      document.getElementById('auth-section').style.display = 'none';
+      document.getElementById('feed-section').style.display = 'block';
+      loadFeed();
     }
   </script>
 </body>
