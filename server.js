@@ -135,3 +135,23 @@ app.get('/posts', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
+
+
+// Change Password
+app.post('/change-password', (req, res) => {
+  const { username, currentPassword, newPassword } = req.body;
+  if (!username || !currentPassword || !newPassword) {
+    return res.status(400).send('Missing fields');
+  }
+
+  const users = readUsers();
+  const user = users[username];
+
+  if (!user || user.passwordHash !== currentPassword) {
+    return res.status(401).send('Invalid current password');
+  }
+
+  user.passwordHash = newPassword;
+  writeUsers(users);
+  res.status(200).send('Password updated successfully');
+});

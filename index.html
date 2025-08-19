@@ -30,7 +30,24 @@
   <!-- Feed Section -->
   <div id="feed-section" style="display: none;" class="login-box">
     <h2>Welcome, <span id="username-display"></span>!</h2>
+    <div class="user-menu">
+  <button id="user-button">⚙️ Account ▾</button>
+  <div id="user-dropdown" class="dropdown hidden">
     <button id="logout-button">Logout</button>
+    <button id="toggle-password">Change Password</button>
+  </div>
+</div>
+
+<div id="password-form" class="login-box hidden">
+  <h3>Change Password</h3>
+  <form id="changePasswordForm">
+    <input type="password" id="current-password" placeholder="Current Password" required />
+    <input type="password" id="new-password" placeholder="New Password" required />
+    <button type="submit">Change Password</button>
+  </form>
+  <p id="change-password-message"></p>
+</div>
+
 
     <h2>Post Something</h2>
     <form id="postForm">
@@ -41,12 +58,11 @@
 
     <h2>Recent Posts</h2>
     <div id="feed"></div>
-  </div>
 
   <script>
     let loggedInUsername = null;
 
-    // Login handler
+    // Login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('login-username').value;
@@ -67,7 +83,7 @@
       }
     });
 
-    // Sign-up handler
+    // Sign Up
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('signup-username').value;
@@ -88,7 +104,7 @@
       }
     });
 
-    // Post handler
+    // Post
     document.getElementById('postForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const content = document.getElementById('post-content').value;
@@ -108,21 +124,40 @@
       }
     });
 
-    // Logout handler
+    // Change Password
+    document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+
+      const res = await fetch('/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: loggedInUsername,
+          currentPassword,
+          newPassword
+        })
+      });
+
+      const text = await res.text();
+      document.getElementById('change-password-message').textContent = text;
+
+      if (res.ok) {
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+      }
+    });
+
+    // Logout
     document.getElementById('logout-button').addEventListener('click', () => {
       loggedInUsername = null;
       document.getElementById('auth-section').style.display = 'block';
       document.getElementById('feed-section').style.display = 'none';
-
-      // Optional cleanup
-      document.getElementById('login-message').textContent = '';
-      document.getElementById('signup-message').textContent = '';
-      document.getElementById('post-message').textContent = '';
-      document.getElementById('post-content').value = '';
       document.getElementById('feed').innerHTML = '';
     });
 
-    // Load posts
+    // Load Feed
     async function loadFeed() {
       const res = await fetch('/posts');
       const posts = await res.json();
@@ -140,13 +175,23 @@
       });
     }
 
-    // Show feed and hide auth
+    // Show Feed
     function showFeed() {
       document.getElementById('auth-section').style.display = 'none';
       document.getElementById('feed-section').style.display = 'block';
       document.getElementById('username-display').textContent = loggedInUsername;
       loadFeed();
     }
+
+    document.getElementById('user-button').addEventListener('click', () => {
+  document.getElementById('user-dropdown').classList.toggle('hidden');
+});
+
+document.getElementById('toggle-password').addEventListener('click', () => {
+  document.getElementById('password-form').classList.toggle('hidden');
+  document.getElementById('user-dropdown').classList.add('hidden');
+});
+
   </script>
 </body>
 </html>

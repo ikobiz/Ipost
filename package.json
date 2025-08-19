@@ -1,6 +1,6 @@
 {
-  "name": "simple-post-server",
-  "version": "1.0.0",
+  "name": "Ipost",
+  "version": "0.0.9",
   "description": "",
   "main": "index.js",
   "scripts": {

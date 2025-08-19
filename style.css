@@ -22,7 +22,7 @@ h1 {
 
 .login-box {
   max-width: 400px;
-  margin: 100px auto;
+  margin: 10px auto;
   padding: 30px;
   background: #f0f8ff;
   border-radius: 10px;
@@ -68,3 +68,28 @@ button {
 button:hover {
   background: linear-gradient(to bottom, #4682b4 0%, #7ec0ee 100%);
 }
+.user-menu {
+  position: relative;
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+#user-button {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.hidden {
+  display: none;
+}
+
