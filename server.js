@@ -109,6 +109,16 @@ app.post('/login', (req, res) => {
   }
 });
 
+app.get('/api/my-posts', (req, res) => {
+  const username = req.session.username;
+  if (!username) return res.status(401).send({ error: 'Not logged in' });
+
+  const allPosts = JSON.parse(fs.readFileSync('posts.json', 'utf8'));
+  const userPosts = allPosts.filter(post => post.user === username);
+  res.send(userPosts);
+});
+
+
 // Create Post
 app.post('/posts', (req, res) => {
   const { user, content } = req.body;

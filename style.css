@@ -93,3 +93,10 @@ button:hover {
   display: none;
 }
 
+.post {
+  background: #fff;
+  border: 1px solid #aaa;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-family: 'Courier New', monospace;
+}
