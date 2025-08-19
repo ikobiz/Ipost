@@ -1,52 +1,60 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+
 const app = express();
 const PORT = 3000;
+const DATA_FILE = path.join(__dirname, 'posts.json');
 
 app.use(express.json());
 
-const POSTS_FILE = path.join(__dirname, 'posts.json');
+/* Serve index.html from root */
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-// Load posts from file
-let posts = [];
-try {
-  const data = fs.readFileSync(POSTS_FILE, 'utf8');
-  posts = JSON.parse(data);
-} catch (err) {
-  console.error('Could not read posts.json:', err);
-}
+/* GET all posts */
+app.get('/posts', (req, res) => {
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read posts.' });
+    try {
+      const posts = JSON.parse(data);
+      res.json(posts);
+    } catch {
+      res.status(500).json({ error: 'Corrupted posts file.' });
+    }
+  });
+});
 
-// Save posts to file
-function savePosts() {
-  fs.writeFileSync(POSTS_FILE, JSON.stringify(posts, null, 2));
-}
-
-// POST /posts — create a new post
+/* POST a new post */
 app.post('/posts', (req, res) => {
   const { username, content } = req.body;
-
-  if (!username || !content) {
+  if (!username?.trim() || !content?.trim()) {
     return res.status(400).json({ error: 'Username and content are required.' });
   }
 
-  const post = {
-    id: posts.length + 1,
-    username,
-    content,
-    timestamp: new Date()
-  };
+  const newPost = { username: username.trim(), content: content.trim() };
 
-  posts.push(post);
-  savePosts();
-  res.status(201).json(post);
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    let posts = [];
+    if (!err && data) {
+      try {
+        posts = JSON.parse(data);
+      } catch {
+        return res.status(500).json({ error: 'Corrupted posts file.' });
+      }
+    }
+
+    posts.push(newPost);
+
+    fs.writeFile(DATA_FILE, JSON.stringify(posts, null, 2), (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save post.' });
+      res.status(201).json({ message: 'Post saved.' });
+    });
+  });
 });
 
-// GET /posts — retrieve all posts
-app.get('/posts', (req, res) => {
-  res.json(posts);
-});
-
+/* Start server */
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

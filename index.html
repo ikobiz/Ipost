@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Social Feed</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    input, textarea, button { display: block; margin: 1em 0; width: 100%; max-width: 400px; }
+    #posts { margin-top: 2em; }
+    .post { border-bottom: 1px solid #ccc; padding: 1em 0; }
+  </style>
+</head>
+<body>
+  <h1>🗨️ Post to the Feed</h1>
+  <input type="text" id="username" placeholder="Your username" />
+  <textarea id="content" placeholder="What's on your mind?" rows="4"></textarea>
+  <button onclick="submitPost()">Submit</button>
+
+  <div id="posts">
+    <h2>📜 All Posts</h2>
+    <div id="feed"></div>
+  </div>
+
+  <script>
+    async function submitPost() {
+      const username = document.getElementById('username').value.trim();
+      const content = document.getElementById('content').value.trim();
+      if (!username || !content) {
+        alert("Username and content can't be empty.");
+        return;
+      }
+
+      await fetch('http://localhost:3000/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, content })
+      });
+
+      document.getElementById('username').value = '';
+      document.getElementById('content').value = '';
+      loadPosts();
+    }
+
+    async function loadPosts() {
+      const res = await fetch('http://localhost:3000/posts');
+      const posts = await res.json();
+      const feed = document.getElementById('feed');
+      feed.innerHTML = posts.map(p => `
+        <div class="post">
+          <strong>${p.username}</strong><br/>
+          ${p.content}
+        </div>
+      `).join('');
+    }
+
+    loadPosts();
+  </script>
+</body>
+</html>
